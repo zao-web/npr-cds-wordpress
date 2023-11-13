@@ -32,12 +32,12 @@ class NPR_CDS_WP {
 	 */
 	function __construct() {
 		$this->request = new stdClass;
-		$this->request->method = NULL;
-		$this->request->params = NULL;
-		$this->request->data = NULL;
-		$this->request->path = NULL;
-		$this->request->base = NULL;
-		$this->request->request_url = NULL;
+		$this->request->method = null;
+		$this->request->params = null;
+		$this->request->data = null;
+		$this->request->path = null;
+		$this->request->base = null;
+		$this->request->request_url = null;
 	}
 
 	function request( $params = [], $path = 'documents' ): void {
@@ -65,7 +65,7 @@ class NPR_CDS_WP {
 	function get_token_options(): array {
 		$token = get_option( 'npr_cds_token' );
 		if ( empty( $token ) ) {
-			npr_cds_show_message( 'No CDS bearer token present. Please enter one on the main settings page.', TRUE );
+			npr_cds_show_message( 'No CDS bearer token present. Please enter one on the main settings page.', true );
 		}
 		return [
 			'headers' => [
@@ -97,14 +97,14 @@ class NPR_CDS_WP {
 					$this->notice[] = __( 'No data available.' );
 				}
 			} else {
-				npr_cds_show_message( 'An error occurred pulling your story from the NPR CDS.  The CDS responded with message = ' . $response['response']['message'], TRUE );
+				npr_cds_show_message( 'An error occurred pulling your story from the NPR CDS.  The CDS responded with message = ' . $response['response']['message'], true );
 			}
 		} else {
 			$error_text = '';
 			if ( !empty( $response->errors['http_request_failed'][0] ) ) {
 				$error_text = '<br> HTTP Error response =  ' . $response->errors['http_request_failed'][0];
 			}
-			npr_cds_show_message( 'Error pulling story for url=' . $url . $error_text, TRUE );
+			npr_cds_show_message( 'Error pulling story for url=' . $url . $error_text, true );
 			npr_cds_error_log( 'Error retrieving story for url=' . $url );
 		}
 	}
@@ -152,15 +152,15 @@ class NPR_CDS_WP {
 	 * @return int $post_id or 0
 	 * @throws Exception
 	 */
-	function update_posts_from_stories( bool $publish = TRUE, bool $qnum = false ): int {
+	function update_posts_from_stories( bool $publish = true, bool $qnum = false ): int {
 		$pull_post_type = get_option( 'npr_cds_pull_post_type', 'post' );
 
 		$post_id = null;
 
 		if ( !empty( $this->stories ) ) {
-			$single_story = TRUE;
+			$single_story = true;
 			if ( sizeof( $this->stories ) > 1 ) {
-				$single_story = FALSE;
+				$single_story = false;
 			}
 			foreach ( $this->stories as $story ) {
 				$exists = new WP_Query([
@@ -193,11 +193,14 @@ class NPR_CDS_WP {
 					$existing = $existing_status = null;
 				}
 
-				$npr_has_video = FALSE;
+				$npr_has_video = false;
 				$npr_layout = $this->get_body_with_layout( $story );
+
 				if ( !empty( $npr_layout['body'] ) ) {
 					$story->body = $npr_layout['body'];
 					$npr_has_video = $npr_layout['has_video'];
+				} else {
+					$story->body = '';
 				}
 
 				// add the transcript
@@ -335,7 +338,7 @@ class NPR_CDS_WP {
 					 * @since 1.7
 					 *
 					 * @param array $args Parameters passed to wp_insert_post()
-					 * @param int $post_id Post ID or NULL if no post ID.
+					 * @param int $post_id Post ID or null if no post ID.
 					 * @param stdClass $story Story object created during import
 					 * @param bool $created true if not pre-existing, false otherwise
 					 */
@@ -415,12 +418,14 @@ class NPR_CDS_WP {
 							$file_array['name'] = $imagep_url_parts['basename'];
 							$file_array['tmp_name'] = $tmp;
 
-							$file_OK = TRUE;
+							$file_OK = true;
 							// If error storing temporarily, unlink
 							if ( is_wp_error( $tmp ) ) {
-								@unlink( $file_array['tmp_name'] );
+								if ( ! is_wp_error(  $file_array['tmp_name'] ) ) {
+									@unlink( $file_array['tmp_name'] );
+								}
 								$file_array['tmp_name'] = '';
-								$file_OK = FALSE;
+								$file_OK = false;
 							}
 
 							// do the validation and storage stuff
@@ -429,7 +434,7 @@ class NPR_CDS_WP {
 							// If error storing permanently, unlink
 							if ( is_wp_error( $image_upload_id ) ) {
 								@unlink( $file_array['tmp_name'] );
-								$file_OK = FALSE;
+								$file_OK = false;
 							}
 
 							//set the primary image
@@ -469,7 +474,7 @@ class NPR_CDS_WP {
 					 * @since 1.7
 					 *
 					 * @param array $metas Array of key/value pairs to be updated
-					 * @param int $post_id Post ID or NULL if no post ID.
+					 * @param int $post_id Post ID or null if no post ID.
 					 * @param stdClass $story Story object created during import
 					 * @param bool $created true if not pre-existing, false otherwise
 					 */
@@ -521,7 +526,7 @@ class NPR_CDS_WP {
 					 * @since 1.7
 					 *
 					 * @param array $args Parameters passed to wp_insert_post()
-					 * @param int $post_id Post ID or NULL if no post ID.
+					 * @param int $post_id Post ID or null if no post ID.
 					 * @param stdClass $story Story object created during import
 					 */
 
@@ -550,7 +555,7 @@ class NPR_CDS_WP {
 							 * @since 1.7
 							 *
 							 * @param string $term_name Name of term
-							 * @param int $post_id Post ID or NULL if no post ID.
+							 * @param int $post_id Post ID or null if no post ID.
 							 * @param stdClass $story Story object created during import
 							 */
 							$topic = $this->get_document( $collect->href );
@@ -576,7 +581,7 @@ class NPR_CDS_WP {
 				* @since 1.7
 				*
 				* @param int[] $category_ids Array of Category IDs to assign to post identified by $post_id
-				* @param int $post_id Post ID or NULL if no post ID.
+				* @param int $post_id Post ID or null if no post ID.
 				* @param stdClass $story Story object created during import
 				*/
 				$category_ids = apply_filters( 'npr_pre_set_post_categories', $category_ids, $post_id, $story );
@@ -833,7 +838,7 @@ class NPR_CDS_WP {
 	 * @return array with reconstructed body and flags describing returned elements
 	 */
 	function get_body_with_layout( stdClass $story ): array {
-		$returnary = [ 'has_image' => FALSE, 'has_video' => FALSE, 'has_external' => FALSE, 'has_slideshow' => FALSE, 'has_video_streaming' => FALSE ];
+		$returnary = [ 'has_image' => false, 'has_video' => false, 'has_external' => false, 'has_slideshow' => false, 'has_video_streaming' => false ];
 		$body_with_layout = "";
 		$use_npr_featured = !empty( get_option( 'npr_cds_query_use_featured' ) );
 		$profiles = $this->extract_profiles( $story->profiles );
@@ -865,9 +870,9 @@ class NPR_CDS_WP {
 						if ( !empty( $asset_current->html ) ) {
 							$body_with_layout .= $asset_current->html;
 						}
-						$returnary['has_external'] = TRUE;
+						$returnary['has_external'] = true;
 						if ( strpos( $asset_current->html, 'jwplayer.com' ) ) {
-							$returnary['has_video'] = TRUE;
+							$returnary['has_video'] = true;
 						}
 						break;
 					case 'audio' :
@@ -899,7 +904,7 @@ class NPR_CDS_WP {
 						if ( !empty( $asset_current->headline ) ) {
 							$asset_title = $asset_current->headline;
 						}
-						$returnary['has_video'] = TRUE;
+						$returnary['has_video'] = true;
 						$body_with_layout .= '<figure class="wp-block-embed is-type-video"><div class="wp-block-embed__wrapper"><iframe width="560" height="315" src="https://www.youtube.com/embed/' . $asset_current->videoId . '" title="' . $asset_title . '" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div></figure>';
 						break;
 					case 'internal-link' :
@@ -954,7 +959,7 @@ class NPR_CDS_WP {
 						break;
 					case 'image-gallery' :
 						$fightml = '<figure class="wp-block-image"><div class="splide"><div class="splide__track"><ul class="splide__list">';
-						$returnary['has_slideshow'] = TRUE;
+						$returnary['has_slideshow'] = true;
 						foreach ( $asset_current->layout as $ig_layout ) {
 							$ig_asset_id = $this->extract_asset_id( $ig_layout->href );
 							$ig_asset_current = $story->assets->{ $ig_asset_id };
@@ -1068,7 +1073,8 @@ class NPR_CDS_WP {
 							$audio_file = '<p><iframe class="npr-embed-audio" style="width: 100%; height: 235px;" src="' . $audio_current->embeddedPlayerLink->href . '"></iframe></p>';
 						} elseif ( $audio_current->isDownloadable ) {
 							foreach ( $audio_current->enclosures as $enclose ) {
-								if ( $enclose->type == 'audio/mpeg' && !in_array( 'premium', $enclose->rels ) ) {
+								$rels = $enclose->rels ?? [];
+								if ( $enclose->type == 'audio/mpeg' && !in_array( 'premium', $rels ) ) {
 									$audio_file = '[audio mp3="' . $enclose->href . '"][/audio]';
 								}
 							}
